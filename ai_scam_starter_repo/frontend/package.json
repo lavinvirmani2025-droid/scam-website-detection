@@ -1,0 +1,9 @@
+{
+  "name": "ai-scam-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Start frontend dev server (implement React app)' && sleep 1",
+    "build": "echo 'build step placeholder'"
+  }
+}
