@@ -1,30 +1,31 @@
-// app/api/admin/users/delete/[id]/route.ts
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { verifyToken } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/firebase";
+import { doc, deleteDoc } from "firebase/firestore";
 
-const prisma = new PrismaClient();
-
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    // verify admin
-    const cookie = req.headers.get("cookie") || "";
-    const match = cookie.match(/(?:^|;\s*)token=([^;]+)/);
-    if (!match) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const payload = verifyToken(decodeURIComponent(match[1]));
-    if (!payload || payload.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { id } = await context.params;
 
-    const id = Number(params.id);
-    if (Number.isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
 
-    // Prevent deleting yourself (optional)
-    if (id === payload.id) return NextResponse.json({ error: "Cannot delete own admin account" }, { status: 400 });
+    await deleteDoc(doc(db, "users", id));
 
-    await prisma.user.delete({ where: { id } });
-    return NextResponse.json({ message: "User deleted" });
-  } catch (err) {
-    console.error("ADMIN DELETE ERROR:", err);
-    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    return NextResponse.json({
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.error("DELETE USER ERROR:", error);
+    return NextResponse.json(
+      { error: "Failed to delete user" },
+      { status: 500 }
+    );
   }
 }
-
