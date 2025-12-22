@@ -26,7 +26,7 @@ export async function getUserFromRequest(
     if (!payload || !payload.id) return null;
 
     // 🔥 FIRESTORE USER FETCH
-    const userRef = doc(db, "users", payload.id);
+    const userRef = doc(db, "users", String(payload.id));
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) return null;
