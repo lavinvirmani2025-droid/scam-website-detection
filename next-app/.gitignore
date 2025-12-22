@@ -42,4 +42,5 @@ next-env.d.ts
 
 /app/generated/prisma
 Passwords.txt
+._*
 
