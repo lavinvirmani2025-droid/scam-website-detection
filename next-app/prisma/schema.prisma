@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int           @id @default(autoincrement())
+  name      String
+  email     String        @unique
+  password  String
+  role      String
+  createdAt DateTime      @default(now())
+
+  // 👇 This is the missing back-relation
+  scamReports ScamReport[]
+}
+
+model ScamReport {
+  id          Int      @id @default(autoincrement())
+  url         String
+  description String?
+  status      String   @default("pending")
+  createdBy   Int
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [createdBy], references: [id])
+}
+
+model TrainingFile {
+  id        Int      @id @default(autoincrement())
+  fileName  String
+  uploadedAt DateTime @default(now())
+}
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  type      String
+  createdAt DateTime @default(now())
+}
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  type      String   // "page_view", "scan", "report_submit", etc
+  route     String?  // which page or feature
+  createdAt DateTime @default(now())
+}
+
