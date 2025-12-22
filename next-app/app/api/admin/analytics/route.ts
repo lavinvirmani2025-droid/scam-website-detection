@@ -1,62 +1,36 @@
 import { NextResponse } from "next/server";
-
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 
 export async function GET() {
   try {
-    // BASIC COUNTS
-    const [
-      totalUsers,
-      totalReports,
-      approved,
-      rejected,
-      pending,
-      visits,
-      signups,
-      logins,
-      submissions,
-    ] = await Promise.all([
-      prisma.user.count(),
-      prisma.scamReport.count(),
-      prisma.scamReport.count({ where: { status: "approved" } }),
-      prisma.scamReport.count({ where: { status: "rejected" } }),
-      prisma.scamReport.count({ where: { status: "pending" } }),
-      prisma.analyticsEvent.count({ where: { type: "visit" } }),
-      prisma.analyticsEvent.count({ where: { type: "signup" } }),
-      prisma.analyticsEvent.count({ where: { type: "login" } }),
-      prisma.analyticsEvent.count({ where: { type: "report_submitted" } }),
-    ]);
+    const usersSnap = await getDocs(collection(db, "users"));
+    const reportsSnap = await getDocs(collection(db, "reports"));
 
-    // RECENT ITEMS
-    const recentReports = await prisma.scamReport.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      include: { user: true },
-    });
+    const approvedReportsSnap = await getDocs(
+      query(collection(db, "reports"), where("status", "==", "approved"))
+    );
 
-    const recentUsers = await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    });
+    const rejectedReportsSnap = await getDocs(
+      query(collection(db, "reports"), where("status", "==", "rejected"))
+    );
 
     return NextResponse.json({
-      totalUsers,
-      totalReports,
-      approved,
-      rejected,
-      pending,
-      visits,
-      signups,
-      logins,
-      submissions,
-      recentReports,
-      recentUsers,
+      users: usersSnap.size,
+      reports: reportsSnap.size,
+      approved: approvedReportsSnap.size,
+      rejected: rejectedReportsSnap.size,
     });
   } catch (error) {
-    console.error("ANALYTICS ERROR:", error);
+    console.error("ADMIN ANALYTICS ERROR:", error);
     return NextResponse.json(
       { error: "Failed to load analytics" },
       { status: 500 }
     );
   }
 }
-

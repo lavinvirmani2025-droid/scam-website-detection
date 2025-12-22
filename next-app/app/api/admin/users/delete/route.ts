@@ -1,17 +1,24 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/firebase";
+import { doc, deleteDoc } from "firebase/firestore";
 
-import { NextResponse } from "next/server";
-
-
-
-export async function POST(req: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const { id } = await req.json();
+    const body = await request.json();
+    const { userId } = body;
 
-    await prisma.user.delete({
-      where: { id: Number(id) },
+    if (!userId) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await deleteDoc(doc(db, "users", userId));
+
+    return NextResponse.json({
+      message: "User deleted successfully",
     });
-
-    return NextResponse.json({ message: "User deleted" });
   } catch (error) {
     console.error("DELETE USER ERROR:", error);
     return NextResponse.json(
@@ -20,4 +27,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

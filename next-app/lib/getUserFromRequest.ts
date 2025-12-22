@@ -1,31 +1,42 @@
 // lib/getUserFromRequest.ts
 
 import { verifyToken } from "./auth";
+import { db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
 
+export async function getUserFromRequest(
+  req?: Request | { headers?: Headers }
+) {
+  try {
+    // read cookie header
+    const cookieHeader =
+      typeof (req as Request | undefined)?.headers?.get === "function"
+        ? (req as Request).headers.get("cookie") ?? ""
+        : "";
 
+    if (!cookieHeader) return null;
 
-export async function getUserFromRequest(req: Request | { headers?: Headers } | undefined) {
-  // try Request-like object first
-  const cookieHeader =
-    typeof (req as Request | undefined)?.headers?.get === "function"
-      ? (req as Request).headers.get("cookie") ?? ""
-      : "";
+    // extract token
+    const match = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
+    if (!match) return null;
 
-  // fallback: attempt to read from global next/headers (only works in server components)
-  // (not used here by default; prefer passing Request)
-  const cookiesString = cookieHeader || "";
+    const token = decodeURIComponent(match[1]);
+    const payload = verifyToken(token);
 
-  if (!cookiesString) return null;
+    if (!payload || !payload.id) return null;
 
-  // find token cookie
-  const match = cookiesString.match(/(?:^|;\s*)token=([^;]+)/);
-  if (!match) return null;
-  const token = decodeURIComponent(match[1]);
+    // 🔥 FIRESTORE USER FETCH
+    const userRef = doc(db, "users", payload.id);
+    const userSnap = await getDoc(userRef);
 
-  const payload = verifyToken(token);
-  if (!payload) return null;
+    if (!userSnap.exists()) return null;
 
-  const user = await prisma.user.findUnique({ where: { id: payload.id } });
-  return user ?? null;
+    return {
+      id: userSnap.id,
+      ...userSnap.data(),
+    };
+  } catch (error) {
+    console.error("getUserFromRequest error:", error);
+    return null;
+  }
 }
-
