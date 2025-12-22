@@ -1,11 +1,11 @@
 // app/api/auth/login/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+
 import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
 import { serialize } from "cookie";
 
-const prisma = new PrismaClient();
+
 
 export async function POST(req: Request) {
   try {

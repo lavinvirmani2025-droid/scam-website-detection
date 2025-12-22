@@ -1,8 +1,8 @@
 // lib/getUserFromRequest.ts
-import { PrismaClient } from "@prisma/client";
+
 import { verifyToken } from "./auth";
 
-const prisma = new PrismaClient();
+
 
 export async function getUserFromRequest(req: Request | { headers?: Headers } | undefined) {
   // try Request-like object first

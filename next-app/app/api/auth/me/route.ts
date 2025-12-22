@@ -1,9 +1,9 @@
 // app/api/auth/me/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+
 import { verifyToken } from "@/lib/auth";
 
-const prisma = new PrismaClient();
+
 
 export async function GET(req: Request) {
   try {
