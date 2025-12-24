@@ -4,6 +4,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
+import { sendPasswordResetEmail } from "firebase/auth";
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -64,6 +66,20 @@ export default function LoginPage() {
       setError("Invalid email or password");
     }
   };
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email first");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent. Check your inbox.");
+    } catch (err) {
+      setError("Failed to send password reset email");
+    }
+  };
+
 
   return (
     <div
@@ -124,6 +140,19 @@ export default function LoginPage() {
         >
           Login
         </button>
+        <p
+          onClick={handleForgotPassword}
+          style={{
+            marginTop: 12,
+            textAlign: "center",
+            color: "#60a5fa",
+            cursor: "pointer",
+            fontSize: 14,
+          }}
+>
+  Forgot password?
+</p>
+
 
         {error && (
           <p style={{ color: "red", marginTop: 10, textAlign: "center" }}>
