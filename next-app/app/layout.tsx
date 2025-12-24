@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/app/components/Navbar";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
@@ -16,9 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AnalyticsTracker />
+        <Navbar />
         {children}
       </body>
     </html>
   );
 }
-

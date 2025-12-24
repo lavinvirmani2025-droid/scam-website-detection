@@ -2,6 +2,22 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
+/* ---------------- HELPER FUNCTIONS ---------------- */
+
+function normalizeUrl(url: string) {
+  return url
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/$/, "");
+}
+
+function extractDomain(url: string) {
+  return normalizeUrl(url).split("/")[0];
+}
+
+/* ---------------- API HANDLER ---------------- */
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -26,10 +42,14 @@ export async function POST(req: Request) {
 
       if (!url || !label) continue;
 
+      const cleanUrl = url.trim();
+
       await addDoc(collection(db, "training_data"), {
-        url: url.trim(),
+        url: cleanUrl,
         label: label.trim(),
         reason: reason?.trim() || "",
+        normalizedUrl: normalizeUrl(cleanUrl),
+        domain: extractDomain(cleanUrl),
         uploadedAt: serverTimestamp(),
       });
 

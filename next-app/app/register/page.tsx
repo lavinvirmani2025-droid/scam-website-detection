@@ -1,66 +1,40 @@
 "use client";
 
-import {
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     setError("");
     setLoading(true);
 
     try {
-      const cred = await signInWithEmailAndPassword(
+      const cred = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      const uid = cred.user.uid;
-      const snap = await getDoc(doc(db, "users", uid));
+      // create user document
+      await setDoc(doc(db, "users", cred.user.uid), {
+        email,
+        role: "user",
+        createdAt: serverTimestamp(),
+      });
 
-      if (!snap.exists()) {
-        setError("Role not assigned");
-        return;
-      }
-
-      const role = snap.data().role;
-
-      if (role === "admin") {
-        await fetch("/api/auth/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, role: "admin" }),
-        });
-
-        window.location.href = "/admin";
-        return;
-      }
-
-      window.location.href = "/report";
-    } catch {
-      setError("Invalid credentials");
+      window.location.href = "/login";
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
-  };
-
-  const forgotPassword = async () => {
-    if (!email) {
-      setError("Enter email first");
-      return;
-    }
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent");
   };
 
   return (
@@ -77,96 +51,119 @@ export default function LoginPage() {
       <div
         style={{
           background: "#0E1329",
-          padding: 32,
+          padding: 36,
           width: 380,
-          borderRadius: 14,
-          border: "1px solid rgba(124,58,237,0.2)",
-          boxShadow: "0 0 40px rgba(124,58,237,0.15)",
+          borderRadius: 16,
+          border: "1px solid rgba(124,58,237,0.25)",
+          boxShadow: "0 0 45px rgba(124,58,237,0.2)",
           color: "white",
         }}
       >
+        {/* TITLE */}
         <h2
           style={{
             textAlign: "center",
-            marginBottom: 20,
+            marginBottom: 8,
+            fontSize: 26,
+            fontWeight: 800,
             background:
               "linear-gradient(90deg,#7C3AED,#EC4899,#3B82F6)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
         >
-          Login to WEBDEX
+          Create Account
         </h2>
 
+        <p
+          style={{
+            textAlign: "center",
+            color: "#9CA3AF",
+            fontSize: 14,
+            marginBottom: 24,
+          }}
+        >
+          Join WEBDEX to report scam websites
+        </p>
+
+        {/* EMAIL */}
         <input
-          placeholder="Email"
+          type="email"
+          placeholder="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={{
             width: "100%",
-            padding: 12,
-            marginBottom: 12,
-            background: "#070B1A",
-            color: "white",
-            border: "1px solid #1F2937",
-            borderRadius: 8,
-          }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: 12,
+            padding: 14,
             marginBottom: 14,
             background: "#070B1A",
             color: "white",
             border: "1px solid #1F2937",
-            borderRadius: 8,
+            borderRadius: 10,
+            fontSize: 14,
           }}
         />
 
+        {/* PASSWORD */}
+        <input
+          type="password"
+          placeholder="Password (min 6 characters)"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 14,
+            marginBottom: 18,
+            background: "#070B1A",
+            color: "white",
+            border: "1px solid #1F2937",
+            borderRadius: 10,
+            fontSize: 14,
+          }}
+        />
+
+        {/* BUTTON */}
         <button
-          onClick={handleLogin}
+          onClick={handleRegister}
           disabled={loading}
           style={{
             width: "100%",
-            padding: 12,
-            borderRadius: 8,
+            padding: 14,
+            borderRadius: 10,
             background:
               "linear-gradient(90deg,#7C3AED,#EC4899,#3B82F6)",
             color: "white",
-            border: "none",
             fontWeight: 600,
+            border: "none",
             cursor: "pointer",
-            boxShadow: "0 0 20px rgba(236,72,153,0.5)",
+            boxShadow: "0 0 25px rgba(236,72,153,0.45)",
           }}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Creating account..." : "Sign Up"}
         </button>
 
+        {/* LOGIN LINK */}
         <p
-          onClick={forgotPassword}
+          onClick={() => (window.location.href = "/login")}
           style={{
-            marginTop: 12,
+            marginTop: 16,
             textAlign: "center",
-            color: "#A78BFA",
-            cursor: "pointer",
             fontSize: 14,
+            color: "#60A5FA",
+            cursor: "pointer",
           }}
         >
-          Forgot password?
+          Already have an account? Login
         </p>
 
+        {/* ERROR */}
         {error && (
           <p
             style={{
-              color: "#F87171",
               marginTop: 12,
               textAlign: "center",
+              color: "#F87171",
+              fontSize: 14,
             }}
           >
             {error}
