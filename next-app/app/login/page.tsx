@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
-    alert("LOGIN CLICKED"); // 🔥 visual proof
     setError("");
 
     try {
@@ -38,16 +37,29 @@ export default function LoginPage() {
         setError("Access denied");
         return;
       }
-    await fetch("/api/analytics/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "login",
-        route: "/login",
-      }),
-    });
 
-    window.location.href = "/admin";
+      // 🔐 CREATE SERVER SESSION (COOKIE)
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail,
+          role: "admin",
+        }),
+      });
+
+      // 📊 OPTIONAL ANALYTICS
+      await fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "login",
+          route: "/login",
+        }),
+      });
+
+      // 🚀 REDIRECT
+      window.location.href = "/admin";
     } catch (err) {
       setError("Invalid email or password");
     }
@@ -99,7 +111,6 @@ export default function LoginPage() {
           }}
         />
 
-        {/* ✅ THE ONLY LOGIN BUTTON */}
         <button
           onClick={handleLogin}
           style={{
@@ -113,33 +124,6 @@ export default function LoginPage() {
         >
           Login
         </button>
-        <p
-          style={{
-            marginTop: 10,
-            textAlign: "center",
-            color: "#aaa",
-            cursor: "pointer",
-          }}
-          onClick={async () => {
-            if (!email) {
-              setError("Enter your email first");
-              return;
-            }
-
-            try {
-              const { sendPasswordResetEmail } = await import(
-                "firebase/auth"
-              );
-              await sendPasswordResetEmail(auth, email);
-              alert("Password reset email sent");
-            } catch {
-              setError("Failed to send reset email");
-            }
-          }}
->
-  Forgot password?
-</p>
-
 
         {error && (
           <p style={{ color: "red", marginTop: 10, textAlign: "center" }}>

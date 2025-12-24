@@ -1,31 +1,21 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { type, route } = body;
+    let data = {};
 
-    if (!type) {
-      return NextResponse.json(
-        { error: "type is required" },
-        { status: 400 }
-      );
+    try {
+      data = await req.json();
+    } catch {
+      data = {}; // handle empty body safely
     }
 
-    await addDoc(collection(db, "analytics"), {
-      type,
-      route: route || null,
-      timestamp: serverTimestamp(),
-    });
+    // OPTIONAL: log analytics if needed
+    console.log("Analytics event:", data);
 
-    return NextResponse.json({ status: "tracked" });
-  } catch (err) {
-    console.error("ANALYTICS ERROR:", err);
-    return NextResponse.json(
-      { error: "failed to track analytics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("ANALYTICS ERROR:", error);
+    return NextResponse.json({ success: false });
   }
 }

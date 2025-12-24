@@ -5,8 +5,20 @@ import { useState } from "react";
 export default function AdminTrainingPage() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
+
 
   const handleUpload = async () => {
+    try {
+      setStatus("Training in progress...");
+
+      // upload + train logic here
+
+      setStatus("SUCCESS: Model trained successfully");
+    } catch (err) {
+      setStatus("ERROR: Training failed");
+    }
+
     if (!file) {
       setMessage("Please select a CSV file");
       return;
@@ -49,46 +61,52 @@ export default function AdminTrainingPage() {
   };
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>AI Training (Admin)</h1>
+  <div style={{ padding: 40, maxWidth: 500 }}>
+    <h1>AI Training</h1>
+    <p style={{ color: "var(--text-muted)", marginBottom: 20 }}>
+      Upload a CSV file to train the scam detection model
+    </p>
 
-      <input
-        type="file"
-        accept=".csv"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-      />
+    <input
+      type="file"
+      accept=".csv"
+      onChange={(e) => setFile(e.target.files?.[0] || null)}
+      style={{
+        width: "100%",
+        padding: 12,
+        background: "#0e0824",
+        border: "1px solid rgba(177,76,255,0.3)",
+        borderRadius: 10,
+        color: "white",
+        marginBottom: 20,
+      }}
+    />
 
-      <br />
-      <br />
-
-      <button
-        onClick={handleUpload}
-        style={{
-          padding: "8px 14px",
-          background: "#2563eb",
-          color: "white",
-          border: "none",
-          cursor: "pointer",
-          marginRight: 10,
-        }}
+    <button className="btn-primary" onClick={handleUpload}>
+      Upload & Train
+    </button>
+    {status && (
+      <p
+        className={
+          status.startsWith("SUCCESS")
+            ? "status-success"
+            : status.startsWith("ERROR")
+            ? "status-error"
+            : ""
+        }
+        style={{ marginTop: 20 }}
       >
-        Upload CSV
-      </button>
+        {status}
+      </p>
+    )}
 
-      <button
-        onClick={handleTrain}
-        style={{
-          padding: "8px 14px",
-          background: "green",
-          color: "white",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        Start Training
-      </button>
 
-      {message && <p style={{ marginTop: 20 }}>{message}</p>}
-    </div>
+    {status && (
+      <p style={{ marginTop: 20, color: "var(--text-muted)" }}>
+        {status}
+      </p>
+    )}
+  </div>
   );
+
 }

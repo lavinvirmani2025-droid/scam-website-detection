@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-main: #0b061f;
+  --bg-panel: rgba(255, 255, 255, 0.03);
+  --neon-purple: #b14cff;
+  --neon-pink: #ff4fd8;
+  --text-main: #eaeaff;
+  --text-muted: #b8b6d6;
 }
 
 @theme inline {
@@ -20,7 +24,51 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: radial-gradient(circle at top, #1a0f3c, var(--bg-main));
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--neon-purple),
+    var(--neon-pink)
+  );
+  border: none;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(177, 76, 255, 0.35);
+  transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 35px rgba(255, 79, 216, 0.6);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--neon-purple);
+  color: var(--neon-purple);
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+.status-success {
+  color: #5dffb1; /* neon green */
+  font-weight: 600;
+}
+
+.status-error {
+  color: #ff4fd8; /* neon pink */
+  font-weight: 600;
+}
+
