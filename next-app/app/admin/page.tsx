@@ -104,7 +104,7 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
         <button
-          onClick={() => router.push("/admin/train")}
+          onClick={() => router.push("/admin/training")}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg"
         >
           Go to Training Page
